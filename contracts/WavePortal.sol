@@ -12,7 +12,7 @@ contract WavePortal {
   uint8 private chanceOfWinning = 25; // 25% chance of winning
   uint8 private maxWins = 3;
   
-  event NewWave(address indexed from, uint256 timestamp, string message);
+  event NewWave(address indexed from, uint256 timestamp, string message, bool winner);
   
   struct Wave {
     address waver;
@@ -36,7 +36,10 @@ contract WavePortal {
   }
   
   function wave(string memory _message) public returns (string memory) { 
-    uint256 prizeAmount = 0.0001 ether;
+    // uint256 prizeAmount = 0.0001 ether;
+    uint256 prizeAmount = ((block.timestamp + block.difficulty) % 0.0001 ether);
+    
+    bool isWinner = false;
     
     require(Winners[msg.sender].lastWin + waitTime < block.timestamp, "You need to allow cooldown peroid to pass before waving again!");
       
@@ -45,24 +48,36 @@ contract WavePortal {
     
     require(prizeAmount <= address(this).balance, "[-] Whoops, trying to withdraw more ether than the contract has access to!");
     
+    totalWaves += 1;
+    console.log("%s has waved with message: %s", msg.sender, _message);
+    
     if (seed <= chanceOfWinning){
       // require(Winners[msg.sender].timesWon < maxWins, "You have won the max amount of times!");
-      
-      if ()
+      if (Winners[msg.sender].timesWon < maxWins) {
+        console.log(" - D%s won %d Ether!", msg.sender, prizeAmount);
+        isWinner = true;
+        
+        (bool success, ) = (msg.sender).call{value: prizeAmount}("");
+        require(success, "[-] Failed to withdraw money from contract!");
+        Winners[msg.sender].timesWon += 1;
+        Winners[msg.sender].lastWin = block.timestamp;    
+        
+        emit NewWave(msg.sender, block.timestamp, _message, isWinner);
 
-      console.log(" %s won %d Ether!", msg.sender, prizeAmount);
-       
-      (bool success, ) = (msg.sender).call{value: prizeAmount}("");
-      require(success, "[-] Failed to withdraw money from contract!");
-      Winners[msg.sender].timesWon += 1;
-      Winners[msg.sender].lastWin = block.timestamp;    
+        waves.push(Wave(msg.sender, _message, block.timestamp, isWinner));
+        
+        return 'Winner';
       
-      emit NewWave(msg.sender, block.timestamp, _message);
-      return 'Winner';
+      }else {
+        console.log("%s has won the max amount (%d) of times", msg.sender, maxWins);
+      }
     }
-    waves.push(Wave(msg.sender, _message, block.timestamp));
+
+    waves.push(Wave(msg.sender, _message, block.timestamp, isWinner));
     
-    emit NewWave(msg.sender, block.timestamp, _message);
+    emit NewWave(msg.sender, block.timestamp, _message, isWinner);
+    
+    return 'Loser';
     
   }
   
