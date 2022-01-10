@@ -51,53 +51,20 @@ const main = async () => {
       console.log(`[+] Attempting wave ${runCount} after cooldown peroid from same address`);
       waveTxn2 = await waveContract.wave("THis might show up!");
       let resp = await waveTxn2.wait();
-      console.log(resp);
+      // console.log(resp);
       console.log('[*] Cooldown working as expected.')
       runCount += 1;
-      winCount += 1;
+      
+      let wavers = await waveContract.getWavers();
+      
+      let wins = wavers.filter(wave => wave[3] === true);
+      winCount = wins.length;
+
     } catch (err) {
       console.log(`[-] Contract cooldown not working as expected!\n\tContract Error: ${err}`);
     }
+    
   }
-  
-  // console.log(`Waiting for ${waitTime} milliseconds...`);
-  // sleep(waitTime);
-  
-  // try {
-  //   console.log('[+] Attempting 2nd wave after cooldown peroid from same address');
-  //   waveTxn2 = await waveContract.wave("THis should show up!");
-  //   await waveTxn2.wait();
-  //   console.log('[*] Cooldown working as expected.')
-  // } catch (err) {
-  //   console.log(`[-] Contract cooldown not working as expected!\n\tContract Error: ${err}`);
-  // }
-  
-  
-  // console.log(`Waiting for ${waitTime} milliseconds...`);
-  // sleep(waitTime);
-  
-  // try {
-  //   console.log('[+] Attempting 3rd wave from same address');
-  //   waveTxn2 = await waveContract.wave("THis should show up i think...!");
-  //   await waveTxn2.wait();
-  //   console.log('[*] Cooldown working as expected.')
-  // } catch (err) {
-  //   console.log(`[-] Contract cooldown not working as expected!\n\tContract Error: ${err}`);
-  // }
-  
-  // console.log(`Waiting for ${waitTime} milliseconds...`);
-  // sleep(waitTime);
-  
-  // try {
-  //   console.log('[+] Attempting 4th wave from same address, should fail...');
-  //   waveTxn2 = await waveContract.wave("THis should show up i think...!");
-  //   await waveTxn2.wait();
-  //   console.log('[-] 4th wave went through when it should have failed!');
-  // } catch (err) {
-  //   console.log(`[*] Cooldown working as expected.\n\tError: ${err}`);
-  // }
-  
-  
   
   waveTxn = await waveContract.connect(randomPerson).wave('Heyo from Madigasicar heffers!');
   await waveTxn.wait();
@@ -110,6 +77,7 @@ const main = async () => {
   let wavers = await waveContract.getWavers();
   
   console.log(wavers);
+  
 };
 
 
